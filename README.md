@@ -1,10 +1,10 @@
 # Maze Game
 
-A text-based console maze adventure built with **.NET 8**. You explore procedurally generated rooms, collect treasure, deal with threats, and try to reach the exit with as much loot as possible.
+A text-based console maze adventure built with **.NET 9**. You explore procedurally generated rooms, collect treasure, deal with threats, and try to reach the exit with as much loot as possible.
 
 ## Requirements
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 
 ## Solution layout
 
@@ -14,21 +14,21 @@ A text-based console maze adventure built with **.NET 8**. You explore procedura
 | `Maze.Game.Common` | Shared helpers (console UI, JSON deserialization) |
 | `Maze.Game.Tests`  | Unit tests (xUnit)                                |
 
-Source lives under `src/`. Open `src/Maze Game.sln` in Visual Studio or build from the command line.
+Source lives under `src/`. Open `src/MazeGame.sln` in Visual Studio or build from the command line.
 
 ## Build and run
 
 From the repository root:
 
 ```bash
-dotnet build "src/Maze Game.sln"
+dotnet build src/MazeGame.sln
 dotnet run --project src/Maze.Game/Maze.Game.csproj
 ```
 
 To run tests:
 
 ```bash
-dotnet test "src/Maze Game.sln"
+dotnet test src/MazeGame.sln
 ```
 
 `Config.json` and `Resources/*.json` are loaded from the **application directory** (next to `Maze.Game.dll`), not from the shell’s current directory, so the game finds them after a normal build regardless of where you run `dotnet run` from.
@@ -43,7 +43,7 @@ Edit `src/Maze.Game/Config.json`:
 | `MazeName`      | Display name for the maze                                   |
 | `MazeSeed`      | Seed for the random number generator (reproducible layouts) |
 
-Treasure and threat definitions are loaded from `Resources/Treasures.json` and `Resources/Threats.json`.
+Treasure and threat definitions are loaded from `src/Maze.Game/Resources/Treasures.json` and `src/Maze.Game/Resources/Threats.json` (copied next to the built assembly on build).
 
 ## How to play
 
