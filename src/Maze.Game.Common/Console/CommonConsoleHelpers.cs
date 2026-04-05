@@ -92,47 +92,49 @@ namespace Maze.Game.Common
             return value;
         }
 
-        // TODO - Deal with sub commands
-        public static string[] PresentAndProcessPlayerCommands(List<string> userCommands)
+        /// <summary>Prompts until the user enters a valid primary command; short aliases are accepted and normalized to the canonical name.</summary>
+        public static string[] PresentAndProcessPlayerCommands(IReadOnlyList<PlayerCommandSpec> commandSpecs)
         {
-            // Remove the sub-commands from the command list for checking purposes.
-            // Sub-command errors are handled by the caller.
-            List<string> commands = new List<string>();
-            for (int i = 0; i < userCommands.Count; i++)
+            var primaryToCanonical = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var spec in commandSpecs)
             {
-                commands.Add(userCommands[i].Split(" ")[0]);
+                string canonical = spec.CanonicalName.ToLowerInvariant();
+                primaryToCanonical[canonical] = canonical;
+                if (!string.IsNullOrWhiteSpace(spec.ShortAlias))
+                    primaryToCanonical[spec.ShortAlias.ToLowerInvariant()] = canonical;
             }
 
-            string enteredCommand = "";
-            string primaryCommand = "";
-
-            while (!commands.Contains(primaryCommand))
+            while (true)
             {
                 Console.WriteLine();
                 WriteOutputAsDelayedCharArray("What would you like to do?", 10, true);
                 Console.WriteLine();
-                WriteOutputAsDelayedCharArray($"Commands:", 10, true);
+                WriteOutputAsDelayedCharArray("Commands:", 10, true);
                 Console.WriteLine();
-                foreach (var userCommand in userCommands)
+                foreach (var spec in commandSpecs)
+                    WriteOutputAsDelayedCharArray($"- {spec.DisplayText}", 2, true);
+                Console.WriteLine();
+                Console.WriteLine();
+                string enteredCommand = Console.ReadLine()?.Trim().ToLowerInvariant() ?? "";
+                if (string.IsNullOrEmpty(enteredCommand))
                 {
-                    WriteOutputAsDelayedCharArray($"- {userCommand}", 2, true);
+                    WriteOutputAsDelayedCharArray("Please enter a command.", 10, true);
+                    DrawSeperationLine();
+                    continue;
                 }
-                Console.WriteLine();
-                Console.WriteLine();
-                enteredCommand = Console.ReadLine().ToLower();
-                string[] enteredCommands = enteredCommand.Split(' ');
-                primaryCommand = enteredCommands[0];
-                if (!commands.Contains(primaryCommand))
+
+                string[] enteredCommands = enteredCommand.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                string primaryCommand = enteredCommands[0];
+                if (!primaryToCanonical.TryGetValue(primaryCommand, out string canonicalPrimary))
                 {
                     WriteOutputAsDelayedCharArray($"{enteredCommand} is not a recognised command. Please review the command list and enter a recognised command.", 10, true);
                     DrawSeperationLine();
+                    continue;
                 }
-                else
-                {
-                    return enteredCommands;
-                }
+
+                enteredCommands[0] = canonicalPrimary;
+                return enteredCommands;
             }
-            return null;
         }
 
         public static void DrawSeperationLine()

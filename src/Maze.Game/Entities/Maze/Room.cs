@@ -2,6 +2,7 @@
 using Maze.Game.Common.SavingLoading;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Maze.Game.Entities
@@ -52,7 +53,7 @@ namespace Maze.Game.Entities
 
         public void GenerateTreasures(Random rand)
         {
-            Treasure[] possibleTreasures = Deserialize.DeserializeFromJson<Treasure[]>(@".\Resources\Treasures.json");
+            Treasure[] possibleTreasures = Deserialize.DeserializeFromJson<Treasure[]>(Path.Combine(AppContext.BaseDirectory, "Resources", "Treasures.json"));
 
             int maxNumTreasures = rand.Next(1, 4);
 
@@ -65,7 +66,7 @@ namespace Maze.Game.Entities
 
         public void GenerateThreats(Random rand)
         {
-            Threat[] possibleThreats = Deserialize.DeserializeFromJson<Threat[]>(@".\Resources\Threats.json");
+            Threat[] possibleThreats = Deserialize.DeserializeFromJson<Threat[]>(Path.Combine(AppContext.BaseDirectory, "Resources", "Threats.json"));
 
             int maxNumThreats = rand.Next(1, 4);
 

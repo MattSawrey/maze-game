@@ -2,15 +2,15 @@
 using Maze.Game.Common.SavingLoading;
 using Maze.Game.Entities;
 using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Maze.Game
 {
     class Program
     {
-        // Gets the root directory of this project, regardless of where the project has moved too.
-        public static readonly string configurationFilePath = @".\Config.json";
+        // Resolve next to the app assembly so Config.json is found regardless of process working directory.
+        public static readonly string configurationFilePath = Path.Combine(AppContext.BaseDirectory, "Config.json");
 
         public static MazeConfiguration config;
         // The two core entities that the game needs to track throughout it's lifecycle.
@@ -26,6 +26,12 @@ namespace Maze.Game
             return;
         }
 
+        static void SafeClearConsole()
+        {
+            try { Console.Clear(); }
+            catch (IOException) { /* No real console buffer (e.g. some IDE terminals). */ }
+        }
+
         static void GameLoop()
         {
             bool restartGame = true;
@@ -33,13 +39,13 @@ namespace Maze.Game
             {
                 player.ResetTreasureAndMovesMade();
                 Console.ResetColor();
-                Console.Clear();
+                SafeClearConsole();
                 GetUserName();
-                Console.Clear();
+                SafeClearConsole();
                 InitializeMaze();
-                Console.Clear();
+                SafeClearConsole();
                 PlayGame();
-                Console.Clear();
+                SafeClearConsole();
                 restartGame = PresentResults();
             }
             return;
@@ -91,10 +97,9 @@ namespace Maze.Game
             // Use config values to generate maze
             SeedMaze(config.MazeSeed);
 
-            string[] playerCommands = null;
-            while (playerCommands == null || playerCommands[0] != "StartGame")
+            while (true)
             {
-                playerCommands = CommonConsoleHelpers.PresentAndProcessPlayerCommands(new List<string> { "debugmaze", "reseedmaze {No.}", "startgame" });
+                string[] playerCommands = CommonConsoleHelpers.PresentAndProcessPlayerCommands(CommandCatalog.MazeInitialization);
                 switch (playerCommands[0])
                 {
                     case "debugmaze":
@@ -180,7 +185,7 @@ namespace Maze.Game
 
         static bool ProcessPlayerCommandUntilMazeExit()
         {
-            var commands = CommonConsoleHelpers.PresentAndProcessPlayerCommands(new List<string> { "checkpassages", "takepassage {n, s, e, w}", "checkitems", "collectitem {item name}", "hititem {item name}", "defuseitem {item name}", "dropcoin", "resetmaze" });
+            var commands = CommonConsoleHelpers.PresentAndProcessPlayerCommands(CommandCatalog.InGame);
             var primaryCommand = commands[0];
             switch (primaryCommand)
             {
@@ -221,7 +226,8 @@ namespace Maze.Game
 
                             // Player loses treasure
                             int amountOfTreasureLost;
-                            player.RemoveTreasure(maze.Rooms[currentRoomIndex].Threats[new Random().Next(0, maze.Rooms[currentRoomIndex].Threats.Count - 1)].TreasureTheftValue, out amountOfTreasureLost);
+                            var threats = maze.Rooms[currentRoomIndex].Threats;
+                            player.RemoveTreasure(threats[random.Next(0, threats.Count)].TreasureTheftValue, out amountOfTreasureLost);
 
                             CommonConsoleHelpers.WriteOutputAsDelayedCharArray($"It attacked you and you lost {amountOfTreasureLost} treasure!", 20, true);
                             return false;
@@ -327,7 +333,7 @@ namespace Maze.Game
                     {
                         newRoomHintText = "a little bit fresher in this room. You must be getting closer to the exit!";
                     }
-                    else if (maze.Rooms.IndexOf(passage.passageTo) > currentRoomIndex)
+                    else if (maze.Rooms.IndexOf(passage.passageTo) < currentRoomIndex)
                     {
                         newRoomHintText = "a little more foul in this room. You must be going deeper into the Maze!";
                     }
@@ -489,13 +495,13 @@ namespace Maze.Game
             {
                 return;
             }
-            Console.Clear();
+            SafeClearConsole();
             SeedMaze(config.MazeSeed);
             player.ResetTreasureAndMovesMade();
             currentRoomIndex = 0;
             Console.WriteLine();
             CommonConsoleHelpers.WaitForUserToPressEnter(true);
-            Console.Clear();
+            SafeClearConsole();
             DisplayMazeIntro();
         }
 
@@ -528,7 +534,7 @@ namespace Maze.Game
             CommonConsoleHelpers.WriteOutputAsDelayedCharArray($"Number of moves made: {player.NumberOfMovesMade}", 20, true);
             CommonConsoleHelpers.WriteOutputAsDelayedCharArray($"Amount of Treasure Collected: {player.CollectedTreasure}", 20, true);
 
-            string[] playerCommands = CommonConsoleHelpers.PresentAndProcessPlayerCommands(new List<string>() { "restartgame", "endgame" });
+            string[] playerCommands = CommonConsoleHelpers.PresentAndProcessPlayerCommands(CommandCatalog.Results);
             switch (playerCommands[0])
             {
                 case "restartgame":
