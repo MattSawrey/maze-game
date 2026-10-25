@@ -1,10 +1,10 @@
 # Maze Game
 
-A text-based console maze adventure built with **.NET 9**. You explore procedurally generated rooms, collect treasure, deal with threats, and try to reach the exit with as much loot as possible.
+A text-based console maze adventure built with **.NET 10**. You explore procedurally generated rooms, collect treasure, deal with threats, and try to reach the exit with as much loot as possible.
 
 ## Requirements
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 
 ## Solution layout
 
